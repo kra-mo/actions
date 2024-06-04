@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Actions
+GenericName=Automation App
+Comment=Play videos
+Exec=actions
+Icon=@APP_ID@
+Terminal=false
+Type=Application
+Categories=Utility;GNOME;GTK;
+StartupNotify=true

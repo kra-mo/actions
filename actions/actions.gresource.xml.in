@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="@PREFIX@/icons/scalable/actions/">
+    <file preprocess="xml-stripblanks" alias="info-outline-symbolic.svg">../data/icons/scalable/actions/info-outline-symbolic.svg</file>
+  </gresource>
+  <gresource prefix="@PREFIX@">
+    <file preprocess="xml-stripblanks">gtk/window.ui</file>
+    <file preprocess="xml-stripblanks">gtk/help-overlay.ui</file>
+    <file alias="style.css">gtk/style.css</file>
+    <file preprocess="xml-stripblanks" alias="@APP_ID@.metainfo.xml">../data/@APP_ID@.metainfo.xml</file>
+  </gresource>
+</gresources>

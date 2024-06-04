@@ -1,0 +1,6 @@
+data/page.kramo.Afternoon.desktop.in
+data/page.kramo.Afternoon.metainfo.xml.in
+data/page.kramo.Afternoon.gschema.xml
+src/main.py
+src/window.py
+src/window.ui

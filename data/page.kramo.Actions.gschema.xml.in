@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="actions">
+	<schema id="@APP_ID@" path="@PREFIX@/">
+	</schema>
+	<schema id="@APP_ID@.State" path="@PREFIX@/State/">
+	</schema>
+</schemalist>

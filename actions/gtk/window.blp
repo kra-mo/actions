@@ -1,0 +1,58 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $ActionsWindow : Adw.ApplicationWindow {
+  default-width: 800;
+  default-height: 600;
+  title: _("Actions");
+
+  Adw.NavigationView navigation_view {
+    Adw.NavigationPage {
+      title: _("Actions");
+
+      Adw.ToolbarView {
+        [top]
+        Adw.HeaderBar {
+          [start]
+          Button {
+            icon-name: "info-outline-symbolic";
+            tooltip-text: _("About Actions");
+            action-name: "app.about";
+          }
+        }
+        content: WindowHandle {
+          Adw.StatusPage status_page {
+            title: _("Create a Workflow");
+
+            Button {
+              halign: center;
+              label: _("Create");
+              clicked => $create_workflow();
+
+              styles [
+                "pill",
+                "suggested-action",
+              ]
+            }
+          }
+        };
+      }
+    }
+  }
+}
+
+Adw.Dialog actions_dialog {
+  title: _("Actions");
+  content-width: 360;
+
+  Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {}
+
+    content: Adw.PreferencesPage {
+      Adw.PreferencesGroup actions_group {
+        separate-rows: true;
+      }
+    };
+  }
+}

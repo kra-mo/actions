@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+	<id>@APP_ID@</id>
+	<metadata_license>CC0-1.0</metadata_license>
+	<project_license>GPL-3.0-or-later</project_license>
+	<name>Actions</name>
+	<summary>Automate your life</summary>
+	<description>
+	  <p>Let your computer do your bidding for you. Actions allows you to easily create automations that take the busywork out of using your machine and let you focus on what you actually want to do.</p>
+	</description>
+	<launchable type="desktop-id">@APP_ID@.desktop</launchable>
+	<translation type="gettext">actions</translation>
+	<developer id="page.kramo">
+		<name translate="no">kramo</name>
+	</developer>
+	<content_rating type="oars-1.1" />
+	<supports>
+		<control>pointing</control>
+		<control>keyboard</control>
+		<control>touch</control>
+	</supports>
+	<recommends>
+		<display_length compare="ge">360</display_length>
+	</recommends>
+	<screenshots>
+		<screenshot type="default">
+			<caption>The app playing a video</caption>
+			<image type="source" width="922" height="722">https://raw.githubusercontent.com/kra-mo/actions/main/data/screenshots/1.png</image>
+		</screenshot>
+	</screenshots>
+	<releases>
+		<release version="0.1.0" date="2024-06-04"/>
+	</releases>
+</component>

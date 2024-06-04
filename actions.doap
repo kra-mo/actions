@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/"
+         xmlns:gnome="http://api.gnome.org/doap-extensions#"
+         xmlns="http://usefulinc.com/ns/doap#">
+
+  <name>Actions</name>
+  <shortdesc xml:lang="en">Automate your life</shortdesc>
+  <description xml:lang="en">
+Let your computer do your bidding for you. Actions allows you to easily create automations that take the busywork out of using your machine and let you focus on what you actually want to do.
+  </description>
+
+  <homepage rdf:resource="https://github.com/kra-mo/actions" />
+  <download-page rdf:resource="https://github.com/kra-mo/actions" />
+  <bug-database rdf:resource="https://github.com/kra-mo/actions/issues" />
+
+  <programming-language>Python</programming-language>
+  <platform>GTK 4</platform>
+  <platform>Libadwaita</platform>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>kramo</foaf:name>
+      <foaf:mbox rdf:resource="mailto:contact@kramo.page" />
+      <gnome:userid>kramolis</gnome:userid>
+      </foaf:mbox>
+      <foaf:account>
+        <foaf:OnlineAccount>
+          <foaf:accountServiceHomepage rdf:resource="https://github.com"/>
+          <foaf:accountName>kra-mo</foaf:accountName>
+        </foaf:OnlineAccount>
+      </foaf:account>
+      <foaf:account>
+        <foaf:OnlineAccount>
+          <foaf:accountServiceHomepage rdf:resource="https://gitlab.gnome.org"/>
+          <foaf:accountName>kramo</foaf:accountName>
+        </foaf:OnlineAccount>
+      </foaf:account>
+    </foaf:Person>
+  </maintainer>
+
+</Project>
