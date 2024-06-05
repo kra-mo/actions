@@ -1,1 +1,21 @@
+.rounded {
+    border-radius: 9px;
+}
 
+.expander .rounded {
+    border-radius: initial;
+}
+
+.no-padding {
+    padding: 0;
+}
+
+.expander .no-padding {
+    padding: 1px;
+}
+
+row:last-child > .rounded {
+    border-bottom-left-radius: 9px;
+    border-bottom-right-radius: 9px;
+    border-bottom: none;
+}

@@ -21,12 +21,13 @@
 
 import logging
 from collections import namedtuple
-from typing import Any
+from typing import Any, Optional
 
 from gi.repository import Adw, Gio, Gtk
 
 from actions import shared
 from actions.actions import Action, actions  # yo dawg
+from actions.variables import ActionsVariableRow
 
 Action = namedtuple("Action", "title props")
 
@@ -43,11 +44,18 @@ class ActionsWindow(Adw.ApplicationWindow):
     actions_dialog: Adw.Dialog = Gtk.Template.Child()
     actions_group: Adw.PreferencesGroup = Gtk.Template.Child()
 
+    add_group: Optional[Adw.PreferencesGroup] = None
+
+    header_bar: Optional[Adw.HeaderBar] = None
+    run_button: Optional[Gtk.Button] = None
+    cancel_revealer: Optional[Gtk.Revealer] = None
+    cancel_button: Optional[Gtk.Button] = None
+
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        self.active_group = None
-        self.actions = []
+        self.actions_box = None
+        self.actions = {}
 
         if shared.PROFILE == "development":
             self.add_css_class("devel")
@@ -66,13 +74,14 @@ class ActionsWindow(Adw.ApplicationWindow):
         """Appends `action` to the workflow."""
         self.actions_dialog.force_close()
 
-        if not self.active_group:
+        if not self.actions_box:
             return
 
         instance = action(self.get_application())
+        widget = instance.get_widget()
 
-        self.actions.append(instance)
-        self.active_group.add(instance.get_widget())
+        self.actions[widget] = instance
+        self.actions_box.append(widget)
 
     def run(self) -> None:
         """Executes the workflow."""
@@ -82,22 +91,71 @@ class ActionsWindow(Adw.ApplicationWindow):
 
         last = length - 1
 
-        for index, action in reversed(list(enumerate(self.actions))):
+        values = list(self.actions.values())
+
+        for index, action in reversed(list(enumerate(values))):
             if index != last:
-                action.cb = self.actions[index + 1].get_callable()
+                action.cb = values[index + 1].get_callable()
 
             if index == 0:
                 action.get_callable()()
 
+    def choose_variable(self, row: ActionsVariableRow) -> None:
+        self.header_bar.set_show_back_button(False)
+        self.cancel_revealer.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
+        self.cancel_revealer.set_reveal_child(True)
+        self.run_button.set_sensitive(False)
+        self.add_group.set_sensitive(False)
+
+        reached = False
+        for widget, action in self.actions.items():
+            widget.set_can_target(False)
+            reached = reached or action == row.props
+
+            if reached or (action.type != row.type):
+                widget.set_sensitive(False)
+                continue
+
+        self.actions_box.set_selection_mode(Gtk.SelectionMode.BROWSE)
+        self.actions_box.connect("row-selected", self.on_row_selected, row)
+
+    def on_row_selected(
+        self,
+        _obj: Any = None,
+        selected_row: Optional[Gtk.ListBoxRow] = None,
+        variable_row: Optional[ActionsVariableRow] = None,
+    ) -> None:
+        self.header_bar.set_show_back_button(True)
+        self.cancel_revealer.set_transition_type(Gtk.RevealerTransitionType.NONE)
+        self.cancel_revealer.set_reveal_child(False)
+        self.run_button.set_sensitive(True)
+        self.add_group.set_sensitive(True)
+
+        self.actions_box.set_selection_mode(Gtk.SelectionMode.NONE)
+        self.actions_box.disconnect_by_func(self.on_row_selected)
+
+        for widget in self.actions:
+            widget.set_can_target(True)
+            widget.set_sensitive(True)
+
+        if not selected_row:
+            return
+
+        variable_row.source = self.actions[selected_row]
+
     @Gtk.Template.Callback()
     def create_workflow(self, *_args: Any) -> None:
-        self.active_group = Adw.PreferencesGroup(separate_rows=True)
+        self.actions_box = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        self.actions_box.add_css_class("boxed-list-separate")
 
-        (page := Adw.PreferencesPage()).add(self.active_group)
+        (group := Adw.PreferencesGroup()).add(self.actions_box)
+        (page := Adw.PreferencesPage()).add(group)
 
-        page.add(add_group := Adw.PreferencesGroup())
+        self.add_group = Adw.PreferencesGroup()
 
-        add_group.add(
+        page.add(self.add_group)
+
+        self.add_group.add(
             add_button := Adw.ButtonRow(
                 title=_("Add Action"), start_icon_name="list-add-symbolic"
             )
@@ -105,21 +163,27 @@ class ActionsWindow(Adw.ApplicationWindow):
 
         add_button.connect("activated", lambda *_: self.actions_dialog.present(self))
 
-        header_bar = Adw.HeaderBar()
+        self.header_bar = Adw.HeaderBar()
 
-        header_bar.pack_end(
-            run_button := Gtk.Button(
-                has_frame=False,
-                child=Adw.ButtonContent(
-                    icon_name="media-playback-start-symbolic", label=_("Run")
-                ),
-            )
+        self.cancel_button = Gtk.Button(label=_("Cancel"))
+        self.cancel_button.connect("clicked", lambda *_: self.on_row_selected())
+
+        self.cancel_revealer = Gtk.Revealer(child=self.cancel_button)
+
+        self.header_bar.pack_start(self.cancel_revealer)
+
+        self.run_button = Gtk.Button(
+            has_frame=False,
+            child=Adw.ButtonContent(
+                icon_name="media-playback-start-symbolic", label=_("Run")
+            ),
         )
+        self.run_button.connect("clicked", lambda *_: self.run())
 
-        run_button.connect("clicked", lambda *_: self.run())
+        self.header_bar.pack_end(self.run_button)
 
         toolbar_view = Adw.ToolbarView()
-        toolbar_view.add_top_bar(header_bar)
+        toolbar_view.add_top_bar(self.header_bar)
         toolbar_view.set_content(page)
 
         self.navigation_view.push(

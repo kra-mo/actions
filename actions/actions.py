@@ -21,21 +21,41 @@ from typing import Any, Callable, Optional
 
 from gi.repository import Adw, Gdk, Gio, GLib, Gtk
 
+from actions.variables import (
+    ActionsVariableEntryRow,
+    ActionsVariableSpinRow,
+    VariableProperties,
+    VariableReturn,
+)
 
-class Action:  # 🧑‍⚖️
+
+class Action(VariableReturn, VariableProperties):  # 🧑‍⚖️
     """The smallest part of a workflow."""
+
+    __gtype_name__ = "ActionsAction"
 
     ident: str
     title: str
     icon_name: str
     app: Gtk.Application
-    props: dict
     cb: Optional[Callable] = None
 
+    retval: None = None
+
     def __init__(self, app: Gtk.Application) -> None:
+        VariableReturn.__init__(self)
+        VariableProperties.__init__(self)
+
         self.app = app
 
-    def get_callable(self) -> Callable: ...
+    def get_callable(self) -> Callable:
+        def wrapper() -> None:
+            self.emit("get-from-variable")
+            self._get_action_func()()
+
+        return wrapper
+
+    def _get_action_func(self) -> Callable: ...
 
     def get_widget(self) -> Gtk.Widget: ...
 
@@ -45,6 +65,10 @@ class Action:  # 🧑‍⚖️
 
 
 class NotificationAction(Action):
+    """An action to send a desktop notification."""
+
+    __gtype_name__ = "ActionsNotificationAction"
+
     ident = "notification"
     title = _("Send Notification")
     icon_name = "preferences-system-notifications-symbolic"
@@ -57,7 +81,7 @@ class NotificationAction(Action):
             "body": None,
         }
 
-    def get_callable(self) -> Callable:
+    def _get_action_func(self) -> Callable:
         def send_notification() -> None:
             if not (self.app):
                 return
@@ -79,33 +103,36 @@ class NotificationAction(Action):
         )
 
         expander.add_row(
-            title_entry := Adw.EntryRow(
-                title=_("Title"), text=self.props["title"] or ""
+            ActionsVariableEntryRow(
+                self.props["title"] or "",
+                props=self,
+                key="title",
+                title=_("Title"),
             )
-        )
-        title_entry.connect(
-            "changed", lambda *_: self.props.update({"title": title_entry.get_text()})
         )
 
         expander.add_row(
-            body_entry := Adw.EntryRow(
-                title=_("Description"), text=self.props["body"] or ""
+            ActionsVariableEntryRow(
+                self.props["body"] or "",
+                props=self,
+                key="body",
+                title=_("Description"),
             )
-        )
-        body_entry.connect(
-            "changed",
-            lambda *_: self.props.update({"body": body_entry.get_text()}),
         )
 
         return expander
 
 
 class RingBellAction(Action):
+    """An action that emits a short beep."""
+
+    __gtype_name__ = "ActionsRingBellAction"
+
     ident = "ring-bell"
     title = _("Play Alert Sound")
     icon_name = "audio-volume-high-symbolic"
 
-    def get_callable(self) -> Callable:
+    def _get_action_func(self) -> Callable:
 
         def ring_bell() -> None:
             if not (display := Gdk.Display.get_default()):
@@ -122,42 +149,49 @@ class RingBellAction(Action):
 
 
 class WaitAction(Action):
+    """An action to wait a certain number of seconds."""
+
+    __gtype_name__ = "ActionsWaitAction"
+
     ident = "wait"
     title = _("Wait")
     icon_name = "preferences-system-time-symbolic"
+    type = float
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.props = {"seconds": 5}
 
-    def get_callable(self) -> Callable:
+    def _get_action_func(self) -> Callable:
 
         def wait() -> None:
             if not self.cb:
                 return
 
-            GLib.timeout_add_seconds(self.props["seconds"], self._done)
+            def timeout_done() -> None:
+                self.retval = self.props["seconds"]
+                self._done()
+
+            GLib.timeout_add_seconds(self.props["seconds"], timeout_done)
 
         return wait
 
     def get_widget(self) -> Gtk.Widget:
         (
-            spin_row := Adw.SpinRow(
-                title=_("Wait"),
-                subtitle=_("Seconds"),
-                adjustment=Gtk.Adjustment(
+            spin_row := ActionsVariableSpinRow(
+                Gtk.Adjustment(
                     step_increment=1,
                     upper=86400,  # 24 hours
                     lower=0,
                     value=self.props["seconds"],
                 ),
+                props=self,
+                key="seconds",
+                title=_("Wait"),
+                subtitle=_("Seconds"),
+                icon_name=self.icon_name,
             )
-        ).add_prefix(Gtk.Image(icon_name=self.icon_name))
-
-        spin_row.connect(
-            "notify::value",
-            lambda *_: self.props.update({"seconds": spin_row.get_value()}),
         )
 
         return spin_row

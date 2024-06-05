@@ -36,6 +36,7 @@ actions_sources = [
   '__init__.py',
   'actions.py',
   'main.py',
+  'variables.py',
   'window.py',
   configure_file(
     input: 'shared.py.in',
