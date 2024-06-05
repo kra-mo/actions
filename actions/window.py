@@ -83,10 +83,8 @@ class ActionsWindow(Adw.ApplicationWindow):
         last = length - 1
 
         for index, action in reversed(list(enumerate(self.actions))):
-            if index == last:
-                continue
-
-            action.cb = self.actions[index + 1].get_callable()
+            if index != last:
+                action.cb = self.actions[index + 1].get_callable()
 
             if index == 0:
                 action.get_callable()()
