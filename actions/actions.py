@@ -50,7 +50,7 @@ class Action(VariableReturn, VariableProperties):  # 🧑‍⚖️
 
     def get_callable(self) -> Callable:
         def wrapper() -> None:
-            self.emit("get-from-variable")
+            self.emit("set-from-variable")
             self._get_action_func()()
 
         return wrapper
@@ -104,7 +104,7 @@ class NotificationAction(Action):
 
         expander.add_row(
             ActionsVariableEntryRow(
-                self.props["title"] or "",
+                self.props["title"],
                 props=self,
                 key="title",
                 title=_("Title"),
@@ -113,7 +113,7 @@ class NotificationAction(Action):
 
         expander.add_row(
             ActionsVariableEntryRow(
-                self.props["body"] or "",
+                self.props["body"],
                 props=self,
                 key="body",
                 title=_("Description"),
@@ -161,7 +161,9 @@ class WaitAction(Action):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
-        self.props = {"seconds": 5}
+        self.props = {
+            "seconds": 5,
+        }
 
     def _get_action_func(self) -> Callable:
 
@@ -188,7 +190,7 @@ class WaitAction(Action):
                 ),
                 props=self,
                 key="seconds",
-                title=_("Wait"),
+                title=self.title,
                 subtitle=_("Seconds"),
                 icon_name=self.icon_name,
             )
@@ -197,8 +199,113 @@ class WaitAction(Action):
         return spin_row
 
 
-types = (NotificationAction, RingBellAction, WaitAction)
-actions = {}
+class ReturnAction(Action):
+    """An action that ends the current workflow."""
 
-for type in types:
-    actions[type.ident] = type
+    __gtype_name__ = "ActionsReturnAction"
+
+    ident = "return"
+    title = _("End")
+    icon_name = "media-playback-stop-symbolic"
+
+    def _get_action_func(self) -> Callable:
+        return lambda: None
+
+    def get_widget(self) -> Gtk.Widget:
+        return Adw.ActionRow(title=self.title, icon_name=self.icon_name)
+
+
+class FloatVariableAction(Action):
+    """A simple action for storing a number in a variable."""
+
+    __gtype_name__ = "ActionsFloatVariableAction"
+
+    ident = "float"
+    title = _("Number")
+    icon_name = "accessories-calculator-symbolic"
+    type = float
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.props = {
+            "float": 10.0,
+        }
+
+    def _get_action_func(self) -> Callable:
+
+        def number() -> None:
+            self.retval = self.props["float"]
+            self._done()
+
+        return number
+
+    def get_widget(self) -> Gtk.Widget:
+        (
+            spin_row := ActionsVariableSpinRow(
+                Gtk.Adjustment(
+                    step_increment=1,
+                    # Biggest/smallest even numbers where `SpinRow` still works correctly
+                    upper=1000000000000000,
+                    lower=-1000000000000000,
+                    value=self.props["float"],
+                ),
+                digits=3,
+                props=self,
+                key="float",
+                title=self.title,
+                icon_name=self.icon_name,
+            )
+        )
+
+        return spin_row
+
+
+class StringVariableAction(Action):
+    """A simple action for storing text in a variable."""
+
+    __gtype_name__ = "ActionsTextVariableAction"
+
+    ident = "string"
+    title = _("Text")
+    icon_name = "text-x-generic-symbolic"
+    type = str
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.props = {
+            "string": None,
+        }
+
+    def _get_action_func(self) -> Callable:
+        def text() -> None:
+            self.retval = self.props["string"]
+            self._done()
+
+        return text
+
+    def get_widget(self) -> Gtk.Widget:
+        return ActionsVariableEntryRow(
+            self.props["string"],
+            props=self,
+            key="string",
+            title=self.title,
+            icon_name=self.icon_name,
+        )
+
+
+groups = {
+    _("System"): (
+        NotificationAction,
+        RingBellAction,
+    ),
+    _("Logic"): (
+        WaitAction,
+        ReturnAction,
+    ),
+    _("Variables"): (
+        FloatVariableAction,
+        StringVariableAction,
+    ),
+}

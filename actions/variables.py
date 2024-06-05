@@ -29,7 +29,7 @@ class VariableProperties(GObject.Object):
 
     props: dict = {}
 
-    @GObject.Signal(name="get-from-variable")
+    @GObject.Signal(name="set-from-variable")
     def get_from_variable(self) -> None:
         """
         Emitted to signal that keys of `props` should be set from a `VariableReturn` if available.
@@ -158,11 +158,11 @@ class ActionsVariableRow(Gtk.ListBoxRow):
         self.props = props
 
         self.props.connect(
-            "get-from-variable",
+            "set-from-variable",
             lambda *_: (
                 self.props.props.update({self.key: self.source.retval})
                 if self.source
-                else None
+                else self.update_props()
             ),
         )
 
@@ -176,14 +176,14 @@ class ActionsVariableRow(Gtk.ListBoxRow):
         self.set_row(row)
 
         self.change_variable_button = Gtk.Button(
-            has_frame=False, valign=Gtk.Align.CENTER
+            valign=Gtk.Align.CENTER, tooltip_text=_("Choose Variable"), has_frame=False
         )
         self.change_variable_button.connect(
             "clicked", lambda *_: self.choose_variable()
         )
 
         self.clear_variable_button = Gtk.Button(
-            icon_name="edit-clear-symbolic", has_frame=False, valign=Gtk.Align.CENTER
+            valign=Gtk.Align.CENTER, icon_name="edit-clear-symbolic", has_frame=False
         )
         self.clear_variable_button.connect("clicked", lambda *_: self.set_source(None))
 
@@ -220,6 +220,9 @@ class ActionsVariableRow(Gtk.ListBoxRow):
 
         self.variable_row.add_suffix(self.variable_box)
 
+    def update_props(self) -> None:
+        """Updates `self.props` from the value in the widget."""
+
     def do_focus(self, direction: Gtk.DirectionType) -> bool:
         if not self.row:
             return False
@@ -247,9 +250,10 @@ class ActionsVariableRow(Gtk.ListBoxRow):
         self.row.set_activatable(False)
 
         self.choose_variable_button = Gtk.Button(
-            icon_name="arrow-into-box-symbolic",
-            has_frame=False,
             valign=Gtk.Align.CENTER,
+            icon_name="step-in-symbolic",
+            tooltip_text=_("Choose Variable"),
+            has_frame=False,
         )
         self.choose_variable_button.connect(
             "clicked", lambda *_: self.choose_variable()
@@ -295,13 +299,17 @@ class ActionsVariableSpinRow(ActionsVariableRow):
     row: Adw.SpinRow
     type = float
 
-    def __init__(self, adjustment: Gtk.Adjustment, **kwargs: Any) -> None:
-        super().__init__(Adw.SpinRow(adjustment=adjustment), float, **kwargs)
-
-        self.row.connect(
-            "notify::value",
-            lambda *_: self.props.props.update({self.key: self.row.get_value()}),
+    def __init__(
+        self, adjustment: Gtk.Adjustment, digits: Optional[int] = 0, **kwargs: Any
+    ) -> None:
+        super().__init__(
+            Adw.SpinRow(adjustment=adjustment, digits=digits), float, **kwargs
         )
+
+        self.row.connect("notify::value", lambda *_: self.update_props())
+
+    def update_props(self) -> None:
+        self.props.props.update({self.key: self.row.get_value()})
 
 
 class ActionsVariableEntryRow(ActionsVariableRow):
@@ -315,10 +323,10 @@ class ActionsVariableEntryRow(ActionsVariableRow):
     row: Adw.EntryRow
     type = str
 
-    def __init__(self, text: Optional[str] = "", **kwargs: Any) -> None:
-        super().__init__(Adw.EntryRow(text=text), str, **kwargs)
+    def __init__(self, text: Optional[str], **kwargs: Any) -> None:
+        super().__init__(Adw.EntryRow(text=text or ""), str, **kwargs)
 
-        self.row.connect(
-            "changed",
-            lambda *_: self.props.props.update({self.key: self.row.get_text()}),
-        )
+        self.row.connect("changed", lambda *_: self.update_props())
+
+    def update_props(self) -> None:
+        self.props.props.update({self.key: self.row.get_text()})

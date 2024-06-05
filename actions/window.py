@@ -26,7 +26,7 @@ from typing import Any, Optional
 from gi.repository import Adw, Gio, Gtk
 
 from actions import shared
-from actions.actions import Action, actions  # yo dawg
+from actions.actions import Action, groups
 from actions.variables import ActionsVariableRow
 
 Action = namedtuple("Action", "title props")
@@ -42,7 +42,7 @@ class ActionsWindow(Adw.ApplicationWindow):
     status_page: Adw.StatusPage = Gtk.Template.Child()
 
     actions_dialog: Adw.Dialog = Gtk.Template.Child()
-    actions_group: Adw.PreferencesGroup = Gtk.Template.Child()
+    actions_page: Adw.PreferencesPage = Gtk.Template.Child()
 
     add_group: Optional[Adw.PreferencesGroup] = None
 
@@ -62,13 +62,18 @@ class ActionsWindow(Adw.ApplicationWindow):
 
         self.status_page.set_icon_name(shared.APP_ID)
 
-        for action in actions.values():
-            self.actions_group.add(
-                row := Adw.ButtonRow(
-                    title=action.title, start_icon_name=action.icon_name
+        for title, actions in groups.items():
+            group = Adw.PreferencesGroup(title=title, separate_rows=True)
+
+            for action in actions:
+                group.add(
+                    row := Adw.ButtonRow(
+                        title=action.title, start_icon_name=action.icon_name
+                    )
                 )
-            )
-            row.connect("activated", lambda _obj, a=action: self.add_action(a))
+                row.connect("activated", lambda _obj, a=action: self.add_action(a))
+
+            self.actions_page.add(group)
 
     def add_action(self, action: Action) -> None:
         """Appends `action` to the workflow."""

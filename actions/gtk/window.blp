@@ -2,7 +2,7 @@ using Gtk 4.0;
 using Adw 1;
 
 template $ActionsWindow : Adw.ApplicationWindow {
-  default-width: 800;
+  default-width: 900;
   default-height: 600;
   title: _("Actions");
 
@@ -49,10 +49,10 @@ Adw.Dialog actions_dialog {
     [top]
     Adw.HeaderBar {}
 
-    content: Adw.PreferencesPage {
-      Adw.PreferencesGroup actions_group {
-        separate-rows: true;
-      }
+    content: Adw.PreferencesPage actions_page {
+      styles [
+        "actions-page"
+      ]
     };
   }
 }

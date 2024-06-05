@@ -19,3 +19,7 @@ row:last-child > .rounded {
     border-bottom-right-radius: 9px;
     border-bottom: none;
 }
+
+.actions-page > scrolledwindow > viewport > clamp > box {
+    margin-top: 0;
+}
