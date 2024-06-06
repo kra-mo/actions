@@ -2,7 +2,7 @@
 <gresources>
   <gresource prefix="@PREFIX@/icons/scalable/actions/">
     <file preprocess="xml-stripblanks" alias="info-outline-symbolic.svg">../data/icons/scalable/actions/info-outline-symbolic.svg</file>
-    <file preprocess="xml-stripblanks" alias="step-in-symbolic.svg">../data/icons/scalable/actions/step-in-symbolic.svg</file>
+    <file preprocess="xml-stripblanks" alias="arrow-into-box-symbolic.svg">../data/icons/scalable/actions/arrow-into-box-symbolic.svg</file>
   </gresource>
   <gresource prefix="@PREFIX@">
     <file preprocess="xml-stripblanks">gtk/window.ui</file>

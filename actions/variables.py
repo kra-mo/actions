@@ -251,7 +251,7 @@ class ActionsVariableRow(Gtk.ListBoxRow):
 
         self.choose_variable_button = Gtk.Button(
             valign=Gtk.Align.CENTER,
-            icon_name="step-in-symbolic",
+            icon_name="arrow-into-box-symbolic",
             tooltip_text=_("Choose Variable"),
             has_frame=False,
         )
