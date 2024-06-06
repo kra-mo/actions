@@ -21,9 +21,10 @@
 
 import logging
 from collections import namedtuple
+from textwrap import dedent
 from typing import Any, Optional
 
-from gi.repository import Adw, Gio, Gtk
+from gi.repository import Adw, Gio, Gtk, Pango
 
 from actions import shared
 from actions.actions import Action, groups
@@ -41,7 +42,7 @@ class ActionsWindow(Adw.ApplicationWindow):
     navigation_view: Adw.NavigationView = Gtk.Template.Child()
     status_page: Adw.StatusPage = Gtk.Template.Child()
 
-    actions_dialog: Adw.Dialog = Gtk.Template.Child()
+    actions_dialog: Adw.PreferencesDialog = Gtk.Template.Child()
     actions_page: Adw.PreferencesPage = Gtk.Template.Child()
 
     add_group: Optional[Adw.PreferencesGroup] = None
@@ -65,13 +66,44 @@ class ActionsWindow(Adw.ApplicationWindow):
         for title, actions in groups.items():
             group = Adw.PreferencesGroup(title=title, separate_rows=True)
 
-            for action in actions:
-                group.add(
-                    row := Adw.ButtonRow(
-                        title=action.title, start_icon_name=action.icon_name
+            for index, action in enumerate(actions):
+                group.add(row := Adw.ActionRow(title=action.title, activatable=True))
+                row.add_prefix(Gtk.Image(icon_name=action.icon_name))
+                row.add_suffix(
+                    info_button := Gtk.Button(
+                        has_frame=False,
+                        valign=Gtk.Align.CENTER,
+                        icon_name="info-outline-symbolic",
+                        tooltip_text=_("More Information"),
                     )
                 )
+
+                toolbar_view = Adw.ToolbarView()
+                toolbar_view.add_top_bar(Adw.HeaderBar())
+                # TODO: Translations
+                toolbar_view.set_content(
+                    Gtk.ScrolledWindow(
+                        child=Gtk.Label(
+                            margin_start=24,
+                            margin_end=24,
+                            halign=Gtk.Align.START,
+                            valign=Gtk.Align.START,
+                            xalign=0.0,
+                            label=dedent(action.doc),
+                            wrap=True,
+                            use_markup=True,
+                            attributes=Pango.AttrList.from_string("0 -1 size 13000"),
+                        )
+                    )
+                )
+
                 row.connect("activated", lambda _obj, a=action: self.add_action(a))
+                info_button.connect(
+                    "clicked",
+                    lambda _obj, view=toolbar_view, title=action.title: self.actions_dialog.push_subpage(
+                        Adw.NavigationPage.new(view, title)
+                    ),
+                )
 
             self.actions_page.add(group)
 

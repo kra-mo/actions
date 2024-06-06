@@ -41,18 +41,14 @@ template $ActionsWindow : Adw.ApplicationWindow {
   }
 }
 
-Adw.Dialog actions_dialog {
+Adw.PreferencesDialog actions_dialog {
   title: _("Actions");
-  content-width: 360;
+  search-enabled: true;
+  content-width: 390;
 
-  Adw.ToolbarView {
-    [top]
-    Adw.HeaderBar {}
-
-    content: Adw.PreferencesPage actions_page {
-      styles [
-        "actions-page"
-      ]
-    };
+  Adw.PreferencesPage actions_page {
+    styles [
+      "actions-page"
+    ]
   }
 }

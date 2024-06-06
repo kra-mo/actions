@@ -65,9 +65,19 @@ class Action(VariableReturn, VariableProperties):  # 🧑‍⚖️
 
 
 class NotificationAction(Action):
-    """An action to send a desktop notification."""
-
     __gtype_name__ = "ActionsNotificationAction"
+
+    doc = _(
+        """
+        Sends a desktop notification.
+
+
+        <big><b>Input</b></big>
+
+        Title: <i>Text</i>
+        Description: <i>Text</i>
+        """
+    )
 
     ident = "notification"
     title = _("Send Notification")
@@ -124,9 +134,13 @@ class NotificationAction(Action):
 
 
 class RingBellAction(Action):
-    """An action that emits a short beep."""
-
     __gtype_name__ = "ActionsRingBellAction"
+
+    doc = _(
+        """
+        Emits a short beep.
+        """
+    )
 
     ident = "ring-bell"
     title = _("Play Alert Sound")
@@ -149,9 +163,23 @@ class RingBellAction(Action):
 
 
 class WaitAction(Action):
-    """An action to wait a certain number of seconds."""
-
     __gtype_name__ = "ActionsWaitAction"
+
+    doc = _(
+        """
+        Pauses the workflow for a certain number of seconds.
+
+
+        <big><b>Input</b></big>
+
+        Seconds: <i>Number (0 – 86400)</i>
+
+
+        <big><b>Output</b></big>
+
+        Seconds: <i>Number (0 – 86400)</i>
+        """
+    )
 
     ident = "wait"
     title = _("Wait")
@@ -200,9 +228,13 @@ class WaitAction(Action):
 
 
 class ReturnAction(Action):
-    """An action that ends the current workflow."""
-
     __gtype_name__ = "ActionsReturnAction"
+
+    doc = _(
+        """
+        Stops the workflow permanently.
+        """
+    )
 
     ident = "return"
     title = _("End")
@@ -216,9 +248,23 @@ class ReturnAction(Action):
 
 
 class FloatVariableAction(Action):
-    """A simple action for storing a number in a variable."""
-
     __gtype_name__ = "ActionsFloatVariableAction"
+
+    doc = _(
+        """
+        Simply stores a number in a variable.
+
+
+        <big><b>Input</b></big>
+
+        Number: <i>Number (-1e15 – 1e15)</i>
+
+
+        <big><b>Output</b></big>
+
+        Number: <i>Number (-1e15 – 1e15)</i>
+        """
+    )
 
     ident = "float"
     title = _("Number")
@@ -246,8 +292,8 @@ class FloatVariableAction(Action):
                 Gtk.Adjustment(
                     step_increment=1,
                     # Biggest/smallest even numbers where `SpinRow` still works correctly
-                    upper=1000000000000000,
-                    lower=-1000000000000000,
+                    upper=1e15,
+                    lower=-1e15,
                     value=self.props["float"],
                 ),
                 digits=3,
@@ -262,9 +308,23 @@ class FloatVariableAction(Action):
 
 
 class StringVariableAction(Action):
-    """A simple action for storing text in a variable."""
-
     __gtype_name__ = "ActionsTextVariableAction"
+
+    doc = _(
+        """
+        Simply stores text in a variable.
+
+
+        <big><b>Input</b></big>
+
+        Text: <i>Text</i>
+
+
+        <big><b>Output</b></big>
+
+        Text: <i>Text</i>
+        """
+    )
 
     ident = "string"
     title = _("Text")
